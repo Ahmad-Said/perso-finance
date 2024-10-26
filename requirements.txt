@@ -1,0 +1,8 @@
+pymupdf
+pandas
+openpyxl
+pydantic
+fpdf
+pdfkit
+jinja2
+PyPDF2
