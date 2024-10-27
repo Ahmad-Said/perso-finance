@@ -3,6 +3,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
+from bank.model.transaction_category import TransactionCategory
+
 
 class Transaction(BaseModel):
     bank_nomination: str
@@ -10,7 +12,14 @@ class Transaction(BaseModel):
     description: str
     expense_amount: Decimal
     income_amount: Decimal
+
+    # computed properties
+    transaction_category: TransactionCategory = TransactionCategory.MISCELLANEOUS_OTHER
     proof_document: str
+
+    def get_signature(self):
+        formatted_date = self.transaction_date.strftime("%Y-%m-%d")
+        return f"{self.bank_nomination}_{formatted_date}_{self.description}_{self.expense_amount}_{self.income_amount}"
 
 
 class BankStatement(BaseModel):

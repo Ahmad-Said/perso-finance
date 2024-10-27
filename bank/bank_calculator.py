@@ -7,6 +7,7 @@ from tqdm import tqdm
 from bank.bnp.bnp_hello_statement_extractor import BNPHelloStatementExtractor
 from bank.bnp.bnp_statement_extractor import BNPStatementExtractor
 from bank.generic.bank_statement_extractor import BankStatementExtractor
+from bank.generic.transaction_categorizer import TransactionCategorizer
 from bank.model.transaction import BankStatement
 from bank.revolut.revolut_statement_extractor import RevolutStatementExtractor
 from const.const_gl import ConstGl
@@ -35,8 +36,17 @@ def main():
         (ConstGl.PATH_TO_BANK_DATA_HELLO_BANK, BNPHelloStatementExtractor()),
         (ConstGl.PATH_TO_BANK_DATA_REVOLUT, RevolutStatementExtractor())
     ]
+    transaction_categorizer = TransactionCategorizer()
     for bank_path, extractor in banks_path_tuples:
         all_transactions.extend(extract_transactions(bank_path, extractor, result_hasher))
+
+
+    for transaction in tqdm(all_transactions, desc="Categorizing transactions"):
+        if transaction_categorizer.is_need_categorization(transaction, 518):
+            transaction_categorizer.categorize(transaction, True)
+        else:
+            transaction_categorizer.categorize(transaction, False)
+
 
     xlsx_file = ConstGl.TEMP_DIR + '/all_transactions.xlsx'
     all_transactions_dict = [transaction.model_dump() for transaction in all_transactions]
