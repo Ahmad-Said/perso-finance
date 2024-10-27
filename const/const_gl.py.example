@@ -4,6 +4,7 @@ import os
 class ConstGl:
     PERSON_FULL_NAME = 'FirstName LASTNAME'
 
+
     # Data paths architecture: convention over configuration
     # Data paths
     """
@@ -25,10 +26,13 @@ class ConstGl:
                 -> hello_bank
                 -> revolut
                     -> account_statement_2020-01-01.csv
+                -> sg
+                    -> 2021-01-01.pdf
+                    -> ...
     """
-    PATH_TO_DATA_FRAIS = os.path.abspath('../data')
-    TEMP_DIR = os.path.join(PATH_TO_DATA_FRAIS, 'temp')
-    SPECIAL_FRAIS_JSON = os.path.join(PATH_TO_DATA_FRAIS, 'frais', 'special_frais.json')
+    PATH_TO_DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+    TEMP_DIR = os.path.join(PATH_TO_DATA, 'temp')
+    SPECIAL_FRAIS_JSON = os.path.join(PATH_TO_DATA, 'frais', 'special_frais.json')
 
     """
     SNCF folder data architecture:
@@ -38,13 +42,14 @@ class ConstGl:
                 -> trip2.pdf
                 -> ...
     """
-    PATH_TO_DATA_FRAIS_SNCF = os.path.join(PATH_TO_DATA_FRAIS, 'frais', 'sncf')
+    PATH_TO_DATA_FRAIS_SNCF = os.path.join(PATH_TO_DATA, 'frais', 'sncf')
     PATH_TO_DATA_FRAIS_SNCF_TRIPS = os.path.join(PATH_TO_DATA_FRAIS_SNCF, 'trips')
 
     PATH_TO_WK_HTML_TO_PDF = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
 
     # Bank data
-    PATH_TO_BANK_DATA = os.path.join(PATH_TO_DATA_FRAIS, 'bank')
+    PATH_TO_BANK_DATA = os.path.join(PATH_TO_DATA, 'bank')
     PATH_TO_BANK_DATA_BNP = os.path.join(PATH_TO_BANK_DATA, 'bnp')
     PATH_TO_BANK_DATA_HELLO_BANK = os.path.join(PATH_TO_BANK_DATA, 'hello_bank')
     PATH_TO_BANK_DATA_REVOLUT = os.path.join(PATH_TO_BANK_DATA, 'revolut')
+    PATH_TO_BANK_DATA_SG = os.path.join(PATH_TO_BANK_DATA, 'sg')

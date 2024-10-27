@@ -6,6 +6,7 @@ import pdfplumber
 
 from bank.generic.bank_statement_extractor import BankStatementExtractor
 from bank.model.transaction import BankStatement, Transaction
+from util import numeric_parser
 
 
 class BNPStatementExtractor(BankStatementExtractor):
@@ -62,15 +63,6 @@ class BNPStatementExtractor(BankStatementExtractor):
 
         return start_date, end_date
 
-    @staticmethod
-    def is_decimal(s) -> tuple[bool, Decimal]:
-        s = s.replace(',', '.').replace(' ', '')
-        try:
-            value = Decimal(s)
-            return True, value
-        except InvalidOperation:
-            return False, Decimal(0)
-
     def _parse_transaction_date(self, date_str, start_date, end_date) -> datetime:
         if not date_str or len(date_str.strip()) != 5:
             return None
@@ -83,6 +75,8 @@ class BNPStatementExtractor(BankStatementExtractor):
         with pdfplumber.open(pdf_path) as pdf:
             first_page_text = pdf.pages[0].extract_text(x_tolerance=2)
             start_date, end_date = self._extract_start_end_dates(first_page_text)
+            bank_statement.start_date = start_date
+            bank_statement.end_date = end_date
             for page in pdf.pages:
                 table = page.extract_table(BNPStatementExtractor.TABLE_SETTINGS)
                 if not table:
@@ -103,9 +97,9 @@ class BNPStatementExtractor(BankStatementExtractor):
 
         description = row[self.TABLE_COLUMNS_INDEX["description"]]
         expense_amount_str = row[self.TABLE_COLUMNS_INDEX["expense_amount"]]
-        is_outgoing, expense_amount = BNPStatementExtractor.is_decimal(expense_amount_str)
+        is_outgoing, expense_amount = numeric_parser.is_decimal(expense_amount_str)
         incoming_amount_str = row[self.TABLE_COLUMNS_INDEX["income_amount"]]
-        is_incoming, incoming_amount = BNPStatementExtractor.is_decimal(incoming_amount_str)
+        is_incoming, incoming_amount = numeric_parser.is_decimal(incoming_amount_str)
 
         if not transaction_date and is_incoming and description:
             # first row of the table
@@ -114,15 +108,12 @@ class BNPStatementExtractor(BankStatementExtractor):
         elif not transaction_date and date_month_dot_day == 'TOTAL DES OPERATIONS':
             # last row of the table
             # ['TOTAL DES OPERATIONS', None, None, '3 003,79', '250,88']
-            total_expense_str = row[self.TABLE_COLUMNS_INDEX["expense_amount"]]
-            _, bank_statement.total_expense = self.is_decimal(total_expense_str)
-            total_income_str = row[self.TABLE_COLUMNS_INDEX["income_amount"]]
-            _, bank_statement.total_income = self.is_decimal(total_income_str)
+            bank_statement.total_expense = expense_amount
+            bank_statement.total_income = incoming_amount
         elif not transaction_date and 'SOLDE CREDITEUR' in date_month_dot_day:
             # row with only the final credit balance
             # ['SOLDE CREDITEUR AU 06.02.2024', None, None, '', '763,61']
-            final_credit_balance_str = row[self.TABLE_COLUMNS_INDEX["income_amount"]]
-            _, bank_statement.final_credit_balance = self.is_decimal(final_credit_balance_str)
+            bank_statement.final_credit_balance = incoming_amount
         elif is_incoming or is_outgoing:
             bank_statement.transactions.append(Transaction(
                 bank_nomination=self.BANK_NOMINATION,
@@ -141,6 +132,7 @@ def main():
     bank_statement = bnp_extractor.extract_statement('RLV_CHQ_300040018600002709179_20240206.pdf')
     bank_statement.validate_statement()
     print(bank_statement)
+
 
 if __name__ == '__main__':
     main()

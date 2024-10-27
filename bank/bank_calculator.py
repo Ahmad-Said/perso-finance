@@ -10,6 +10,7 @@ from bank.generic.bank_statement_extractor import BankStatementExtractor
 from bank.generic.transaction_categorizer import TransactionCategorizer
 from bank.model.transaction import BankStatement
 from bank.revolut.revolut_statement_extractor import RevolutStatementExtractor
+from bank.sg.sg_statement_extractor import SGStatementExtractor
 from const.const_gl import ConstGl
 from util.result_file_cache import ResultFileCache
 
@@ -34,7 +35,8 @@ def main():
     banks_path_tuples = [
         (ConstGl.PATH_TO_BANK_DATA_BNP, BNPStatementExtractor()),
         (ConstGl.PATH_TO_BANK_DATA_HELLO_BANK, BNPHelloStatementExtractor()),
-        (ConstGl.PATH_TO_BANK_DATA_REVOLUT, RevolutStatementExtractor())
+        (ConstGl.PATH_TO_BANK_DATA_REVOLUT, RevolutStatementExtractor()),
+        (ConstGl.PATH_TO_BANK_DATA_SG, SGStatementExtractor()),
     ]
     transaction_categorizer = TransactionCategorizer()
     for bank_path, extractor in banks_path_tuples:
@@ -42,7 +44,7 @@ def main():
 
 
     for transaction in tqdm(all_transactions, desc="Categorizing transactions"):
-        if transaction_categorizer.is_need_categorization(transaction, 518):
+        if transaction_categorizer.is_need_categorization(transaction, 5000):
             transaction_categorizer.categorize(transaction, True)
         else:
             transaction_categorizer.categorize(transaction, False)
