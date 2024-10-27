@@ -18,8 +18,15 @@ class ConstGl:
                     -> trip1.pdf
                     -> trip2.pdf
                     -> ...
+            -> bank
+                -> bnp
+                    -> RLV_CHQ_23432423_2020-01-01.pdf
+                    -> ...
+                -> hello_bank
+                -> revolut
+                    -> account_statement_2020-01-01.csv
     """
-    PATH_TO_DATA_FRAIS = '../data'
+    PATH_TO_DATA_FRAIS = os.path.abspath('../data')
     TEMP_DIR = os.path.join(PATH_TO_DATA_FRAIS, 'temp')
     SPECIAL_FRAIS_JSON = os.path.join(PATH_TO_DATA_FRAIS, 'frais', 'special_frais.json')
 
@@ -34,5 +41,10 @@ class ConstGl:
     PATH_TO_DATA_FRAIS_SNCF = os.path.join(PATH_TO_DATA_FRAIS, 'frais', 'sncf')
     PATH_TO_DATA_FRAIS_SNCF_TRIPS = os.path.join(PATH_TO_DATA_FRAIS_SNCF, 'trips')
 
-    # Path to the wkhtmltopdf executable for the pdf generation
     PATH_TO_WK_HTML_TO_PDF = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+
+    # Bank data
+    PATH_TO_BANK_DATA = os.path.join(PATH_TO_DATA_FRAIS, 'bank')
+    PATH_TO_BANK_DATA_BNP = os.path.join(PATH_TO_BANK_DATA, 'bnp')
+    PATH_TO_BANK_DATA_HELLO_BANK = os.path.join(PATH_TO_BANK_DATA, 'hello_bank')
+    PATH_TO_BANK_DATA_REVOLUT = os.path.join(PATH_TO_BANK_DATA, 'revolut')

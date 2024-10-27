@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 
 class Transaction(BaseModel):
+    bank_nomination: str
     transaction_date: datetime
     description: str
     expense_amount: Decimal
@@ -13,14 +14,14 @@ class Transaction(BaseModel):
 
 
 class BankStatement(BaseModel):
-    transactions: list[Transaction]
-    total_expense: Decimal
-    total_income: Decimal
-    initial_credit_balance: Decimal
-    final_credit_balance: Decimal
-    start_date: datetime
-    end_date: datetime
-    proof_document: str
+    transactions: list[Transaction] = []
+    total_expense: Decimal = Decimal(0)
+    total_income: Decimal = Decimal(0)
+    initial_credit_balance: Decimal = Decimal(0)
+    final_credit_balance: Decimal = Decimal(0)
+    start_date: datetime = datetime(1970, 1, 1)
+    end_date: datetime = datetime(1970, 1, 1)
+    proof_document: str = ""
 
     def validate_statement(self):
         # validate the statement
@@ -30,3 +31,11 @@ class BankStatement(BaseModel):
         assert self.total_expense == total_expense, f"Total expense mismatch: {self.total_expense} != {total_expense}"
         assert self.final_credit_balance == self.initial_credit_balance + total_income - total_expense, \
             f"Final credit balance mismatch: {self.final_credit_balance} != {self.initial_credit_balance + total_income - total_expense}"
+
+    def compute_from_transactions(self):
+        self.total_income = sum([transaction.income_amount for transaction in self.transactions])
+        self.total_expense = sum([transaction.expense_amount for transaction in self.transactions])
+        self.final_credit_balance = self.initial_credit_balance + self.total_income - self.total_expense
+        self.start_date = min([transaction.transaction_date for transaction in self.transactions])
+        self.end_date = max([transaction.transaction_date for transaction in self.transactions])
+        return self
