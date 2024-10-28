@@ -12,6 +12,7 @@ from bank.model.transaction import BankStatement
 from bank.revolut.revolut_statement_extractor import RevolutStatementExtractor
 from bank.sg.sg_statement_extractor import SGStatementExtractor
 from const.const_gl import ConstGl
+from util import os_util
 from util.result_file_cache import ResultFileCache
 
 
@@ -61,6 +62,7 @@ def main():
     parent_directory = os.path.dirname(xlsx_file)
     os.makedirs(parent_directory, exist_ok=True)
     df.to_excel(xlsx_file, index=False)
+    os_util.open_with_associated_program(xlsx_file)
 
 if __name__ == '__main__':
     main()
