@@ -1,12 +1,13 @@
 import hashlib
 import json
 import os
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional, Callable, TypeVar
 
 from pydantic import BaseModel
 
 from const.const_gl import ConstGl
 
+T = TypeVar('T', bound=BaseModel)
 
 class ResultFileCache:
     def __init__(self, map_file: str = None):
@@ -55,15 +56,31 @@ class ResultFileCache:
             return cls(**json.loads(dumped_model))
         return None
 
+
     def get_or_process_document(self,
                                 file_path: str,
-                                callback_process: Callable[[str], BaseModel]
-                                ) -> BaseModel:
-        """Retrieve document data by hash if available, otherwise process the document."""
+                                callback_process: Callable[[str], T],
+                                found_callback: Optional[Callable[[T, str], None]] = None
+                                ) -> T:
+        """Retrieve document data by hash if available,
+        When found call the found_callback with the document data and file path (useful to update the document path if renamed),
+        otherwise process the document.
+
+        Args:
+            file_path (str): The path to the file.
+            callback_process (Callable[[str], T]): The callback function to process the document.
+            found_callback (Optional[Callable[[T, str], None]]): The callback function to call if the document is found.
+
+        Returns:
+            T: The document data.
+        """
         file_hash = self.compute_hash(file_path)
         model_cls = callback_process.__annotations__['return']
         doc_data = self.get_document_by_hash(file_hash, model_cls)
-        if not doc_data:
+        if doc_data:
+            if found_callback:
+                found_callback(doc_data, file_path)
+        elif not doc_data:
             print(f"Processing and caching {file_path}")
             doc_data = callback_process(file_path)
             self.update_hash_map(file_path, doc_data)

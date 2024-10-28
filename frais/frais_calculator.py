@@ -4,6 +4,7 @@ from datetime import datetime
 
 import fitz  # PyMuPDF
 import pandas as pd
+from tqdm import tqdm
 
 from const.const_gl import ConstGl
 from frais.misc import special_frais
@@ -13,6 +14,7 @@ from frais.sncf.trip_achat_extractor import TripAchatExtractor
 from frais.sncf.trip_extractor import TripExtractor
 from frais.sncf.trip_voyage_extractor import TripVoyageExtractor
 from util import pdf_merger
+from util.result_file_cache import ResultFileCache
 
 
 def extract_trip_frais_details(pdf_path: str, extractors: list[TripExtractor]) -> FraisDetails:
@@ -39,10 +41,18 @@ def extract_trip_frais_details(pdf_path: str, extractors: list[TripExtractor]) -
 def extract_trip_frais_from_dir(pdf_dir: str, extractors: list[TripExtractor]) -> list[FraisDetails]:
     data = []
     # Iterate over each PDF file in the directory
-    for filename in os.listdir(pdf_dir):
+    result_hasher = ResultFileCache()
+
+    def extract_function(pdf_path_par: str) -> FraisDetails:
+        return extract_trip_frais_details(pdf_path_par, extractors)
+
+    def found_callback(frais_details_par: FraisDetails, pdf_path_par: str):
+        frais_details_par.proof_document = pdf_path_par
+
+    for filename in tqdm(os.listdir(pdf_dir), desc="Processing trip frais"):
         if filename.endswith('.pdf'):
             pdf_path = os.path.join(pdf_dir, filename)
-            frais_details: FraisDetails = extract_trip_frais_details(pdf_path, extractors)
+            frais_details: FraisDetails = result_hasher.get_or_process_document(pdf_path, extract_function, found_callback)
             data.append(frais_details)
     return data
 
@@ -70,14 +80,11 @@ def analyse_frais_details(frais_details: list[FraisDetails],
     # conserve only the filename
     df['proof_document'] = df['proof_document'].apply(lambda x: os.path.basename(x))
 
-
     # sort by payment date descending
     df = df.sort_values(by='payment_date', ascending=False)
 
     # reorder columns
     df = df[['payment_date_f', 'payment_day', 'comment', 'proof_document', 'amount_paid', ]]
-
-
 
     # Add the total amount as the last row
     total_row = pd.DataFrame([{
@@ -122,7 +129,7 @@ def main():
     pdf_files = [summary_pdf] + [frais.proof_document for frais in sorted_included_frais]
 
     aio_filename = f'aio_frais_{start_date}_{end_datetime_str}.pdf'.replace('/', '_')
-    aio_merged_pdf_path = os.path.join(ConstGl.TEMP_DIR, aio_filename)
+    aio_merged_pdf_path = os.path.join(ConstGl.PATH_TO_DATA_FRAIS_RESULT, aio_filename)
     pdf_merger.merge_pdfs_with_bookmarks(pdf_files, aio_merged_pdf_path)
 
 

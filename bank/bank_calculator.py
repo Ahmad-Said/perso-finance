@@ -50,7 +50,7 @@ def main():
             transaction_categorizer.categorize(transaction, False)
 
 
-    xlsx_file = ConstGl.TEMP_DIR + '/all_transactions.xlsx'
+    xlsx_file = ConstGl.PATH_TO_BANK_RESULT + '/all_transactions.xlsx'
     all_transactions_dict = [transaction.model_dump() for transaction in all_transactions]
     df = pd.DataFrame(all_transactions_dict)
     # Convert Decimal columns to float

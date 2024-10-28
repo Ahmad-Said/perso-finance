@@ -1,0 +1,5 @@
+from const.const_gl import ConstGl
+
+
+class ConstGlLocal(ConstGl):
+    PERSON_FULL_NAME = 'Jhon Smith'

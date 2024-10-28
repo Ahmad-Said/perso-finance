@@ -34,7 +34,9 @@ The Perso-Finance repository is a Python-based project designed to extract, proc
 
 ### Configuration
 
-Copy const/const_gl.py.example to const/const_gl.py and fill in the required information.
+To Override the default configuration,
+Copy const/const_gl_local.py.example to const/const_gl_local.py 
+   and fill in the required information inherited from const/const_gl.py
 
 ### Extracting Bank Statements
 
