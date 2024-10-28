@@ -44,7 +44,7 @@ def main():
 
 
     for transaction in tqdm(all_transactions, desc="Categorizing transactions"):
-        if transaction_categorizer.is_need_categorization(transaction, 5000):
+        if transaction_categorizer.is_need_categorization(transaction, 50000):
             transaction_categorizer.categorize(transaction, True)
         else:
             transaction_categorizer.categorize(transaction, False)
@@ -58,6 +58,8 @@ def main():
         if pd.api.types.is_object_dtype(df[col]):
             df[col] = df[col].apply(lambda x: float(x) if isinstance(x, Decimal) else x)
 
+    parent_directory = os.path.dirname(xlsx_file)
+    os.makedirs(parent_directory, exist_ok=True)
     df.to_excel(xlsx_file, index=False)
 
 if __name__ == '__main__':

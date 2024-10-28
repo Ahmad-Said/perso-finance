@@ -74,14 +74,15 @@ class SGStatementExtractor(BankStatementExtractor):
             first_page_text = pdf.pages[0].extract_text(x_tolerance=2)
             bank_statement.start_date, bank_statement.end_date = self._extract_start_end_dates(first_page_text)
             for page in pdf.pages:
-                table = page.extract_table(SGStatementExtractor.TABLE_SETTINGS)
-                if not table:
-                    continue
-                for row in table:
-                    # if all columns are empty, skip the row
-                    if all(not cell for cell in row):
+                tables = page.extract_tables(SGStatementExtractor.TABLE_SETTINGS)
+                for table in tables:
+                    if not table or len(table[0]) < len(self.TABLE_COLUMNS_INDEX):
                         continue
-                    self.process_row(row, bank_statement)
+                    for row in table:
+                        # if all columns are empty, skip the row
+                        if all(not cell for cell in row):
+                            continue
+                        self.process_row(row, bank_statement)
             # extract the final credit balance from final page
             bank_statement.final_credit_balance = self._extract_final_credit_balance(pdf)
 

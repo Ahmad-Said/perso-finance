@@ -7,7 +7,8 @@ def is_decimal(s) -> tuple[bool, Decimal]:
         return False, Decimal(0)
     s = s.replace('.', ' ') \
         .replace(',', '.') \
-        .replace(' ', '')
+        .replace(' ', '')  \
+        .replace('*', '')
     try:
         value = Decimal(s)
         return True, value

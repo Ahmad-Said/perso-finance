@@ -50,10 +50,11 @@ class TransactionCategorizer:
         if  transaction.get_signature() in self.user_transaction_category.ignored_transactions_signatures:
             return transaction.transaction_category
         description = transaction.description.upper()
+        description_split_set = set(description.split())
         for key, value in self._normalized_category_map.items():
             key_split = key.split()
             # each part of key must be in description
-            if all(part in description for part in key_split):
+            if all(part in description_split_set for part in key_split):
                 return value
         return None
 

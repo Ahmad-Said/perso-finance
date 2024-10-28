@@ -36,6 +36,8 @@ class ResultFileCache:
         self._save_hash_map()
 
     def _save_hash_map(self):
+        parent_directory = os.path.dirname(self.map_file)
+        os.makedirs(parent_directory, exist_ok=True)
         with open(self.map_file, "w") as file:
             json.dump(self.hash_map, file, indent=4)
 
