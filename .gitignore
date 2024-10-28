@@ -1,4 +1,4 @@
 .idea
 data/
 *.pyc
-const/const_gl.py
+const/const_gl_local.py

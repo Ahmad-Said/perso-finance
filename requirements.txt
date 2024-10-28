@@ -6,3 +6,5 @@ fpdf
 pdfkit
 jinja2
 PyPDF2
+tqdm
+pdfplumber
