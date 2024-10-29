@@ -13,7 +13,7 @@ from frais.report import create_report
 from frais.sncf.trip_achat_extractor import TripAchatExtractor
 from frais.sncf.trip_extractor import TripExtractor
 from frais.sncf.trip_voyage_extractor import TripVoyageExtractor
-from util import pdf_merger, os_util
+from util import pdf_merger, os_util, pdf_number
 from util.result_file_cache import ResultFileCache
 
 
@@ -57,6 +57,24 @@ def extract_trip_frais_from_dir(pdf_dir: str, extractors: list[TripExtractor]) -
     return data
 
 
+def get_printed_df(df: pd.DataFrame, total_amount: float) -> pd.DataFrame:
+    # keep only and reorder columns
+    printed_df = df[['payment_date_f', 'payment_day', 'comment', 'printed_proof', 'amount_paid', ]]
+
+    # Add the total amount as the last row
+    total_row = pd.DataFrame([{
+        'payment_date_f': '',
+        'payment_day': '',
+        'comment': '',
+        'printed_proof': 'Total',
+        'amount_paid': total_amount}])
+    printed_df = pd.concat([printed_df, total_row], ignore_index=True)
+
+    # rename columns to french titles
+    printed_df.columns = ['Date', 'Jour', 'Commentaire', 'Justificatif', 'Montant']
+
+    return printed_df
+
 def analyse_frais_details(frais_details: list[FraisDetails],
                           start_datetime: datetime,
                           end_datetime: datetime = None):
@@ -77,28 +95,23 @@ def analyse_frais_details(frais_details: list[FraisDetails],
     # format day as dddd capitalized (e.g., 'Vendredi')
     df['payment_day'] = payment_datetime_col.dt.strftime('%A').str.capitalize()
 
-    # conserve only the filename
-    df['proof_document'] = df['proof_document'].apply(lambda x: os.path.basename(x))
+    # add a fake printed proof
+    df['printed_proof'] = df['proof_document'].apply(lambda x: 'Page 12/321')
 
     # sort by payment date descending
     df = df.sort_values(by='payment_date', ascending=False)
+    printed_df = get_printed_df(df, total_amount)
+    # replace proof_document with starting page number
+    summary_pdf = create_report.create_summary_pdf(printed_df, '31/12/2023')
+    # merge all pdfs into a single one
+    sorted_included_frais = sorted(included_frais, key=lambda x: x.payment_date, reverse=True)
+    pdf_files = [summary_pdf] + [frais.proof_document for frais in sorted_included_frais]
 
-    # reorder columns
-    df = df[['payment_date_f', 'payment_day', 'comment', 'proof_document', 'amount_paid', ]]
+    file_to_starting_page, total_pages = pdf_merger.predict_starting_page(pdf_files)
 
-    # Add the total amount as the last row
-    total_row = pd.DataFrame([{
-        'payment_date_f': '',
-        'payment_day': '',
-        'comment': '',
-        'proof_document': 'Total',
-        'amount_paid': total_amount}])
-    df = pd.concat([df, total_row], ignore_index=True)
-
-    # rename columns to french titles
-    df.columns = ['Date', 'Jour', 'Commentaire', 'Justificatif', 'Montant']
-
-    return df, included_frais
+    df['printed_proof'] = df['proof_document'].apply(lambda x: f'Page {file_to_starting_page[x]}')
+    printed_df = get_printed_df(df, total_amount)
+    return printed_df, included_frais
 
 
 def main():
@@ -129,8 +142,10 @@ def main():
     pdf_files = [summary_pdf] + [frais.proof_document for frais in sorted_included_frais]
 
     aio_filename = f'aio_frais_{start_date}_{end_datetime_str}.pdf'.replace('/', '_')
+    aio_merged_temp_pdf_path = os.path.join(ConstGl.TEMP_DIR, aio_filename)
+    pdf_merger.merge_pdfs_with_bookmarks(pdf_files, aio_merged_temp_pdf_path)
     aio_merged_pdf_path = os.path.join(ConstGl.PATH_TO_DATA_FRAIS_RESULT, aio_filename)
-    pdf_merger.merge_pdfs_with_bookmarks(pdf_files, aio_merged_pdf_path)
+    pdf_number.add_page_numbers(aio_merged_temp_pdf_path, aio_merged_pdf_path)
     os_util.open_with_associated_program(aio_merged_pdf_path)
 
 
