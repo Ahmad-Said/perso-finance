@@ -13,7 +13,7 @@ from frais.report import create_report
 from frais.sncf.trip_achat_extractor import TripAchatExtractor
 from frais.sncf.trip_extractor import TripExtractor
 from frais.sncf.trip_voyage_extractor import TripVoyageExtractor
-from util import pdf_merger, os_util
+from util import pdf_merger, os_util, pdf_number
 from util.result_file_cache import ResultFileCache
 
 
@@ -142,8 +142,10 @@ def main():
     pdf_files = [summary_pdf] + [frais.proof_document for frais in sorted_included_frais]
 
     aio_filename = f'aio_frais_{start_date}_{end_datetime_str}.pdf'.replace('/', '_')
+    aio_merged_temp_pdf_path = os.path.join(ConstGl.TEMP_DIR, aio_filename)
+    pdf_merger.merge_pdfs_with_bookmarks(pdf_files, aio_merged_temp_pdf_path)
     aio_merged_pdf_path = os.path.join(ConstGl.PATH_TO_DATA_FRAIS_RESULT, aio_filename)
-    pdf_merger.merge_pdfs_with_bookmarks(pdf_files, aio_merged_pdf_path)
+    pdf_number.add_page_numbers(aio_merged_temp_pdf_path, aio_merged_pdf_path)
     os_util.open_with_associated_program(aio_merged_pdf_path)
 
 
