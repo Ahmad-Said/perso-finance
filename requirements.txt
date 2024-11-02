@@ -8,3 +8,5 @@ jinja2
 PyPDF2
 tqdm
 pdfplumber
+langchain-ollama
+prompt_toolkit

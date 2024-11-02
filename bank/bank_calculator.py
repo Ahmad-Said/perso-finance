@@ -40,15 +40,16 @@ def main():
         (ConstGl.PATH_TO_BANK_DATA_SG, SGStatementExtractor()),
     ]
     transaction_categorizer = TransactionCategorizer()
+    transaction_categorizer.ai_predictor.log_level = 'DEBUG'
     for bank_path, extractor in banks_path_tuples:
         all_transactions.extend(extract_transactions(bank_path, extractor, result_hasher))
 
 
     for transaction in tqdm(all_transactions, desc="Categorizing transactions"):
         if transaction_categorizer.is_need_categorization(transaction, 50000):
-            transaction_categorizer.categorize(transaction, True)
+            transaction_categorizer.categorize(transaction, True, False)
         else:
-            transaction_categorizer.categorize(transaction, False)
+            transaction_categorizer.categorize(transaction, False, True)
 
 
     xlsx_file = ConstGl.PATH_TO_BANK_RESULT + '/all_transactions.xlsx'

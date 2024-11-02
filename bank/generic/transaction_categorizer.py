@@ -2,6 +2,7 @@ import json
 import os
 from typing import Optional
 
+from bank.ai.category_predictor import CategoryPredictor
 from bank.generic import tr_common_category
 from bank.model.transaction import Transaction
 from bank.model.transaction_category import TransactionCategory, UserTransactionCategory
@@ -20,6 +21,14 @@ class TransactionCategorizer:
         self.user_transaction_category = loaded_categories
         self._normalized_category_map = {}
         self.compute_normalized_map()
+        self.ai_predictor: Optional[CategoryPredictor] = None
+        self.setup_ai_predictor()
+
+    def setup_ai_predictor(self):
+        try:
+            self.ai_predictor = CategoryPredictor()
+        except Exception as e:
+            print(f"Error: Ai prediction is not available. {e}")
 
     def compute_normalized_map(self):
         # make all keys upper case
@@ -58,13 +67,19 @@ class TransactionCategorizer:
                 return value
         return None
 
-    def categorize(self, transaction: Transaction, ask_user: bool) -> Transaction:
+    def categorize(self,
+                   transaction: Transaction,
+                   ask_user: bool,
+                   predict_with_ai: bool) -> Transaction:
         # Categorize transactions based on description
         category = self.search_category(transaction)
         if category:
             transaction.transaction_category = category
         elif ask_user:
             self.ask_user(transaction)
+        elif self.ai_predictor and predict_with_ai:
+            category = self.ai_predictor.predict_transaction_category(transaction)
+            transaction.transaction_category = category
         return transaction
 
     def is_need_categorization(self, transaction: Transaction, minimum_amount_to_ask = 0) -> bool:

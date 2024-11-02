@@ -4,6 +4,10 @@ import os
 class ConstGl:
     PERSON_FULL_NAME = 'FirstName LASTNAME'
 
+    # AI settings
+    AI_OLLAMA_MODEL = 'llama3.2'
+    AI_OLLAMA_BASE_URL = None # 'http://localhost:11434'
+
     # Data paths architecture: convention over configuration
     # Data paths
     """
