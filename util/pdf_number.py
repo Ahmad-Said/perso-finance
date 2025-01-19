@@ -10,7 +10,7 @@ def add_page_numbers(input_pdf_path, output_pdf_path):
         page = doc[page_num]
         # Define where the page number will be added
         text = f"Page {page_num + 1}"
-        x, y = page.rect.width / 2, page.rect.height - 75  # Adjust to place text at bottom-right
+        x, y = page.rect.width - 100, 75  # Adjust to place text at top-right
 
         # Add the text as an overlay
         page.insert_text((x, y),

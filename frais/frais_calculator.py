@@ -116,11 +116,11 @@ def analyse_frais_details(frais_details: list[FraisDetails],
 
 def main():
     # Set locale to French (France)
-    locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
+    # locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
     # Use the function on your PDF file
     # Example usage
     directory_path = ConstGl.PATH_TO_DATA_FRAIS_SNCF_TRIPS
-    start_date = '01/10/2023'  # Specify the desired start date (day/month/year)
+    start_date = '29/10/2024'  # Specify the desired start date (day/month/year)
     start_datetime = datetime.strptime(start_date, '%d/%m/%Y')
     # Create a list of extractors
     extractors = [TripVoyageExtractor(), TripAchatExtractor()]

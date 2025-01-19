@@ -5,5 +5,5 @@ def open_with_associated_program(filepath: str):
         subprocess.call(('open', filepath))
     elif platform.system() == 'Windows':    # Windows
         os.startfile(filepath)
-    else:                                   # linux variants
-        subprocess.call(('xdg-open', filepath))
+    else:
+        print(f"File to open at: {filepath}")

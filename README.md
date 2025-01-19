@@ -38,10 +38,33 @@ To Override the default configuration,
 Copy const/const_gl_local.py.example to const/const_gl_local.py 
    and fill in the required information inherited from const/const_gl.py
 
+For running different module files in vs code, open folder workspace at root of the project,
+then go to setting -> search env -> edit env file in json -> add followings:
+```json
+{
+    "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}"
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}"
+    }
+}
+```
+
 ### Extracting Bank Statements
 
 To extract and process bank statements, run the `main` function in the `bank_calculator.py` file:
 
 ```sh
 python bank/bank_calculator.py
+```
+
+### Frais Calculator
+If code produce missing local on ubuntu you can run in terminal following commands:
+```sh
+sudo locale-gen fr_FR.UTF-8
+sudo dpkg-reconfigure locales
 ```
